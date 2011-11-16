@@ -36,9 +36,8 @@ package org.osflash.microlisp
 		
 		protected function getNextAtom(sc:IInputScanner):Atom{
 			
-			var char:String = sc.getChar();
-			
-			while(char != null && char == " ") char = sc.getChar();
+			var char:String;
+			do { char = sc.getChar() } while(char != null && char == " ");
 			
 			// there are no more tokens to parse
 			if(char == null || (char == "\n" && !sc.hasInput)) return null;
