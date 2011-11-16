@@ -30,24 +30,8 @@ package org.osflash.microlisp
 		protected function readTail(sc:IInputScanner):MLObject{
 			
 			var atom:Atom = getNextAtom(sc);
-			/*var firstAtom:MLObject;
-			var secondAtom:MLObject;
-			
-			if(atom.name == ")"){
-			
-				return null;
-			
-			}else if(atom.name == "("){
-				
-				firstAtom = readTail(sc);
-				secondAtom = readTail(sc);
-				return new Cons(firstAtom, secondAtom);
-			
-			}
-			
-			secondAtom = readTail(sc);
-			return new Cons(atom, secondAtom);*/
-		    return atom.name == ")" ? null:(new Cons(atom.name == "(" ? readTail(sc):atom, readTail(sc));	
+		    
+            return atom.name == ")" ? null:(new Cons(atom.name == "(" ? readTail(sc):atom, readTail(sc));	
 		}
 		
 		protected function getNextAtom(sc:IInputScanner):Atom{
