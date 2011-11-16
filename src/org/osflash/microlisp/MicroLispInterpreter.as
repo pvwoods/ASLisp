@@ -42,11 +42,8 @@ package org.osflash.microlisp
 			// there are no more tokens to parse
 			if(char == null || (char == "\n" && !sc.hasInput)) return null;
 			
-			// open bracket atom
-			if(char == "(") return new Atom("(");
-			
-			// close bracket atom
-			if(char == ")") return new Atom(")");
+			// open/close bracket atom
+			if(char == "(" || char == ")") return new Atom(char);
 			
 			var ba:String = (char == " " ? "":char) + sc.getCharsTo(' ', ')');
 			
