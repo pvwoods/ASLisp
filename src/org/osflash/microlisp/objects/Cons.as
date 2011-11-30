@@ -15,6 +15,22 @@ package org.osflash.microlisp.objects
 			
 		}
 		
+		public function append(o:MLObject):void{
+			var t:Cons = this;
+			while(t.cdr) t = t.cdr as Cons;
+			t.cdr = new Cons(o, null);
+		}
+		
+		public function toList():Array{
+			var a:Array = [];
+			var t:Cons = this;
+			while(t != null){
+				a.push(t);
+				t = t.cdr as Cons;
+			}
+			return a;
+		}
+		
 		override public function toString():String{
 			return super.toString() + "[type :: 'cons', \n\tcar:" + (car == null ? "null":car.toString()) + "\n\tcdr:" + (cdr == null ? "null":cdr.toString()) + "]";
 		}

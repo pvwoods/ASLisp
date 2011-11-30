@@ -9,20 +9,29 @@ package org.osflash.microlisp
 		public static const _T:Atom = new Atom("#T");
 		public static const _NIL:Cons = new Cons(null, null);
 		
-		public static const _ENV:Array = 
+		public const _ENV:Array = 
 			[
 				new Cons(new Cons(new Atom("QOUTE"),new Cons(new Func(function(c:Cons):MLObject{return c.car}),null)), null),
 				new Cons(new Cons(new Atom("CAR"),new Cons(new Func(function(c:Cons):MLObject{return (c.car as Cons).car}),null)), null),
 				new Cons(new Cons(new Atom("CDR"),new Cons(new Func(function(c:Cons):MLObject{return (c.car as Cons).cdr}),null)), null),
-				/* need to implement CONS*/
-				new Cons(new Cons(new Atom("CONS"),new Cons(new Func(function(c:Cons):MLObject{return c}),null)), null),
+				new Cons(new Cons(new Atom("CONS"),new Cons(new Func(function(c:Cons):MLObject{
+					var t:Cons = new Cons(c.car, null);
+					var a:Cons = (c.cdr as Cons).car as Cons;
+					for(var o:MLObject in a.toList()) t.append(o);
+					return t;
+				}),null)), null),
 				new Cons(new Cons(new Atom("EQUAL"),new Cons(new Func(function(c:Cons):MLObject{
 					return ((c.car as Atom).name == ((c.cdr as Cons).car as Atom).name) ? _T:_NIL;
 				}),null)), null),
 				new Cons(new Cons(new Atom("ATOM"),new Cons(new Func(function(c:Cons):MLObject{return (c.car is Atom) ? _T:_NIL}),null)), null),
-				/* need to implement COND*/
+
 				new Cons(new Cons(new Atom("COND"),new Cons(new Func(function(c:Cons):MLObject{
-					return c;
+					var p:MLObject;
+					for(var o:MLObject in c.toList()){
+						p = eval((o as Cons).car);
+						if(p != _NIL) return eval(((o as Cons).cdr as Cons).car);
+					}
+					return _NIL;
 				}),null)), null),
 				/* need to implement LAMBDA*/
 				new Cons(new Cons(new Atom("LAMBDA"),new Cons(new Func(function(c:Cons):MLObject{return c}),null)), null),
@@ -41,8 +50,8 @@ package org.osflash.microlisp
 			
 		}
 		
-		public function eval(expression:MLObject):void{
-			
+		public function eval(expression:MLObject):MLObject{
+			return new MLObject();
 		}
 		
 		public function read(sc:IInputScanner):MLObject{
