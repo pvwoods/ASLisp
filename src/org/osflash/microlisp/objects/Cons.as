@@ -21,7 +21,7 @@ package org.osflash.microlisp.objects
 			t.cdr = new Cons(o, null);
 		}
 		
-		public function toList():Array{
+		public function toCList():Array{
 			var a:Array = [];
 			var t:Cons = this;
 			while(t != null){

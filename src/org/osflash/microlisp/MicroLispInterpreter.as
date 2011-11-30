@@ -9,7 +9,7 @@ package org.osflash.microlisp
 		public static const _T:Atom = new Atom("#T");
 		public static const _NIL:Cons = new Cons(null, null);
 		
-		public const _ENV:Array = 
+		public var _ENV:Array = 
 			[
 				new Cons(new Cons(new Atom("QOUTE"),new Cons(new Func(function(c:Cons):MLObject{return c.car}),null)), null),
 				new Cons(new Cons(new Atom("CAR"),new Cons(new Func(function(c:Cons):MLObject{return (c.car as Cons).car}),null)), null),
@@ -17,7 +17,7 @@ package org.osflash.microlisp
 				new Cons(new Cons(new Atom("CONS"),new Cons(new Func(function(c:Cons):MLObject{
 					var t:Cons = new Cons(c.car, null);
 					var a:Cons = (c.cdr as Cons).car as Cons;
-					for(var o:MLObject in a.toList()) t.append(o);
+					for(var o:MLObject in a.toCList()) t.append(o);
 					return t;
 				}),null)), null),
 				new Cons(new Cons(new Atom("EQUAL"),new Cons(new Func(function(c:Cons):MLObject{
@@ -27,16 +27,23 @@ package org.osflash.microlisp
 
 				new Cons(new Cons(new Atom("COND"),new Cons(new Func(function(c:Cons):MLObject{
 					var p:MLObject;
-					for(var o:MLObject in c.toList()){
+					for(var o:MLObject in c.toCList()){
 						p = eval((o as Cons).car);
 						if(p != _NIL) return eval(((o as Cons).cdr as Cons).car);
 					}
 					return _NIL;
 				}),null)), null),
-				/* need to implement LAMBDA*/
-				new Cons(new Cons(new Atom("LAMBDA"),new Cons(new Func(function(c:Cons):MLObject{return c}),null)), null),
-				/* need to implement LABEL*/
-				new Cons(new Cons(new Atom("LABEL"),new Cons(new Func(function(c:Cons):MLObject{return c}),null)), null)
+				new Cons(new Cons(new Atom("LAMBDA"),new Cons(new Func(function(c:Cons):MLObject{
+					var lam:Lambda = c.car as Lambda;
+					var arg:MLObject = c.cdr;
+					var t:MLObject = interleave(lam.args as Cons, c);
+					var exp:MLObject = replaceAtom(lam.sexp,t);
+					return eval(exp);
+				}),null)), null),
+				new Cons(new Cons(new Atom("LABEL"),new Cons(new Func(function(c:Cons):MLObject{
+					_ENV.push(new Cons(new Atom((c.car as Atom).name), new Cons((c.cdr as Cons).car, null)))
+					return _T;
+				}),null)), null)
 							
 			];
 		
@@ -52,6 +59,45 @@ package org.osflash.microlisp
 		
 		public function eval(expression:MLObject):MLObject{
 			return new MLObject();
+		}
+		
+		public function interleave(c1:Cons, c2:Cons):MLObject{
+			var t:Cons = new Cons(new Cons(c1.car, new Cons(c2.car, null)), null);
+			c1 = c1.cdr as Cons;
+			c2 = c2.cdr as Cons;
+			for(var i:uint = 0; i < c1.toCList().length; i++){
+				t.append(new Cons(c1.car, new Cons(c2.car, null)));
+				c2 = c2.cdr as Cons;
+			}
+			return t;
+		}
+		
+		public function toCons(a:Array):Cons{
+			var t:Cons;
+			for each(var i:MLObject in a){
+				if(t == null)
+					t = new Cons(i, null);
+				else
+					t.append(i);
+			}
+			return t;
+		}
+		
+		public function replaceAtom(exp:MLObject, to:MLObject):MLObject{
+			if(exp is Cons){
+				var a:Array = [];
+				for each(var o:MLObject in (to as Cons).toCList()) a.push(replaceAtom(o, to));
+				return toCons(a);
+			}else{
+				var atom:Atom;
+				var replacement:MLObject;
+				for each(var b:Cons in (to as Cons).toCList()){
+					atom = b.car as Atom;
+					replacement = (b.cdr as Cons).car;
+					if(atom.name == (exp as Atom).name) return replacement;
+				}
+			}
+			return exp;
 		}
 		
 		public function read(sc:IInputScanner):MLObject{
