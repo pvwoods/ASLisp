@@ -78,7 +78,21 @@ package org.osflash.microlisp
 		}
 		
 		public function eval(expression:MLObject):MLObject{
-			return new MLObject();
+			if(exp is Cons){
+				var c:Cons = exp as Cons;
+				if((c.car is Atom) && (c.car as Atom).name == "LAMBDA"){
+					return new Lambda((c.cdr as Cons).car, ((c.cdr as Cons).cdr as Cons).car); 
+				}else{
+					return evalFunction();
+				}
+			}else{
+				
+			}
+			return expression;
+		}
+		
+		public function evalFunction(expression:MLObject):MLObject{
+			return expression;
 		}
 		
 		public function interleave(c1:Cons, c2:Cons):MLObject{
