@@ -25,8 +25,8 @@ package org.osflash.microlisp.objects
 			var a:Array = [];
 			var t:Cons = this;
 			while(t != null){
-				a.push(t);
 				t = t.cdr as Cons;
+				a.push(t);
 			}
 			return a;
 		}

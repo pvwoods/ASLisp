@@ -20,7 +20,7 @@ package org.osflash.microlisp
 			
 			_input = input;
 			
-			while(_input.hasInput) trace(eval(read(_input)));
+			trace(eval(read(_input)));
 			
 		}
 		
@@ -93,7 +93,9 @@ package org.osflash.microlisp
 					return new Lambda((c.cdr as Cons).car, ((c.cdr as Cons).cdr as Cons).car); 
 				}else{
 					var a:Array = [];
-					for each(var o:MLObject in (expression as Cons).toCList()) a.push(eval(o));
+					for each(var o:MLObject in (expression as Cons).toCList()){
+						a.push(eval(o));
+					}
 					return evalFunction(toCons(a));
 				}
 			}else{
