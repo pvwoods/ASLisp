@@ -9,52 +9,72 @@ package org.osflash.microlisp
 		public static const _T:Atom = new Atom("#T");
 		public static const _NIL:Cons = new Cons(null, null);
 		
-		public var _ENV:Array = 
-			[
-				new Cons(new Cons(new Atom("QOUTE"),new Cons(new Func(function(c:Cons):MLObject{return c.car}),null)), null),
-				new Cons(new Cons(new Atom("CAR"),new Cons(new Func(function(c:Cons):MLObject{return (c.car as Cons).car}),null)), null),
-				new Cons(new Cons(new Atom("CDR"),new Cons(new Func(function(c:Cons):MLObject{return (c.car as Cons).cdr}),null)), null),
-				new Cons(new Cons(new Atom("CONS"),new Cons(new Func(function(c:Cons):MLObject{
-					var t:Cons = new Cons(c.car, null);
-					var a:Cons = (c.cdr as Cons).car as Cons;
-					for(var o:MLObject in a.toCList()) t.append(o);
-					return t;
-				}),null)), null),
-				new Cons(new Cons(new Atom("EQUAL"),new Cons(new Func(function(c:Cons):MLObject{
-					return ((c.car as Atom).name == ((c.cdr as Cons).car as Atom).name) ? _T:_NIL;
-				}),null)), null),
-				new Cons(new Cons(new Atom("ATOM"),new Cons(new Func(function(c:Cons):MLObject{return (c.car is Atom) ? _T:_NIL}),null)), null),
-
-				new Cons(new Cons(new Atom("COND"),new Cons(new Func(function(c:Cons):MLObject{
-					var p:MLObject;
-					for(var o:MLObject in c.toCList()){
-						p = eval((o as Cons).car);
-						if(p != _NIL) return eval(((o as Cons).cdr as Cons).car);
-					}
-					return _NIL;
-				}),null)), null),
-				new Cons(new Cons(new Atom("LAMBDA"),new Cons(new Func(function(c:Cons):MLObject{
-					var lam:Lambda = c.car as Lambda;
-					var arg:MLObject = c.cdr;
-					var t:MLObject = interleave(lam.args as Cons, c);
-					var exp:MLObject = replaceAtom(lam.sexp,t);
-					return eval(exp);
-				}),null)), null),
-				new Cons(new Cons(new Atom("LABEL"),new Cons(new Func(function(c:Cons):MLObject{
-					_ENV.push(new Cons(new Atom((c.car as Atom).name), new Cons((c.cdr as Cons).car, null)))
-					return _T;
-				}),null)), null)
-							
-			];
+		public var _ENV:Cons; 
 		
 		protected var _input:IInputScanner;
 		
 		
 		public function MicroLispInterpreter(input:IInputScanner):void{
-		
+			
+			buildEnvironment();
+			
 			_input = input;
+			
 			while(_input.hasInput) eval(read(_input));
 			
+		}
+		
+		public function buildEnvironment():void{
+			
+			_ENV = new Cons(new Cons(new Atom("QOUTE"),new Cons(new Func(function(c:Cons):MLObject{
+				return c.car
+			}),null)), null);
+				
+			_ENV.append(new Cons(new Cons(new Atom("CAR"),new Cons(new Func(function(c:Cons):MLObject{
+				return (c.car as Cons).car
+			}),null)), null));
+			
+			_ENV.append(new Cons(new Cons(new Atom("CDR"),new Cons(new Func(function(c:Cons):MLObject{
+				return (c.car as Cons).cdr
+			}),null)), null));
+				
+			_ENV.append(new Cons(new Cons(new Atom("CONS"),new Cons(new Func(function(c:Cons):MLObject{
+				var t:Cons = new Cons(c.car, null);
+				var a:Cons = (c.cdr as Cons).car as Cons;
+				for(var o:MLObject in a.toCList()) t.append(o);
+				return t;
+			}),null)), null));
+			
+			_ENV.append(new Cons(new Cons(new Atom("EQUAL"),new Cons(new Func(function(c:Cons):MLObject{
+				return ((c.car as Atom).name == ((c.cdr as Cons).car as Atom).name) ? _T:_NIL;
+			}),null)), null));
+			
+			_ENV.append(new Cons(new Cons(new Atom("ATOM"),new Cons(new Func(function(c:Cons):MLObject{
+				return (c.car is Atom) ? _T:_NIL;
+			}),null)), null));
+				
+			
+			_ENV.append(new Cons(new Cons(new Atom("COND"),new Cons(new Func(function(c:Cons):MLObject{
+				var p:MLObject;
+				for(var o:MLObject in c.toCList()){
+					p = eval((o as Cons).car);
+					if(p != _NIL) return eval(((o as Cons).cdr as Cons).car);
+				}
+				return _NIL;
+			}),null)), null));
+			
+			_ENV.append(new Cons(new Cons(new Atom("LAMBDA"),new Cons(new Func(function(c:Cons):MLObject{
+				var lam:Lambda = c.car as Lambda;
+				var arg:MLObject = c.cdr;
+				var t:MLObject = interleave(lam.args as Cons, c);
+				var exp:MLObject = replaceAtom(lam.sexp,t);
+				return eval(exp);
+			}),null)), null));
+			
+			_ENV.append(new Cons(new Cons(new Atom("LABEL"),new Cons(new Func(function(c:Cons):MLObject{
+				_ENV.append(new Cons(new Atom((c.car as Atom).name), new Cons((c.cdr as Cons).car, null)))
+				return _T;
+			}),null)), null));
 		}
 		
 		public function eval(expression:MLObject):MLObject{
