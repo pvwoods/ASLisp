@@ -16,7 +16,7 @@ package org.osflash.microlisp.objects
 		}
 		
 		override public function toString():String{
-			return super.toString() + "[type :: 'cons', \n\tcar:" + car.toString() + "\n\tcdr:" + cdr.toString() + "]";
+			return super.toString() + "[type :: 'cons', \n\tcar:" + (car == null ? "null":car.toString()) + "\n\tcdr:" + (cdr == null ? "null":cdr.toString()) + "]";
 		}
 	}
 }

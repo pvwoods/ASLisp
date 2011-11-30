@@ -12,15 +12,14 @@ package org.osflash.microlisp
 		protected var _input:IInputScanner;
 		
 		
-		public function MicroLispInterpreter():void{
+		public function MicroLispInterpreter(input:IInputScanner):void{
 		
-			_input = new SimpleStringScanner("(QOUTE A)");
+			_input = input;
 			while(_input.hasInput) trace(read(_input).toString());
 			
 		}
 		
 		public function read(sc:IInputScanner):MLObject{
-			
 			var atom:Atom = getNextAtom(sc);
 			if(atom.name == "(") return readTail(sc);
 			return atom;
@@ -28,10 +27,8 @@ package org.osflash.microlisp
 		}
 		
 		protected function readTail(sc:IInputScanner):MLObject{
-			
 			var atom:Atom = getNextAtom(sc);
-		    
-            return atom.name == ")" ? null:(new Cons(atom.name == "(" ? readTail(sc):atom, readTail(sc));	
+            return atom.name == ")" ? null:(new Cons(atom.name == "(" ? readTail(sc):atom, readTail(sc)));	
 		}
 		
 		protected function getNextAtom(sc:IInputScanner):Atom{
@@ -46,7 +43,6 @@ package org.osflash.microlisp
 			if(char == "(" || char == ")") return new Atom(char);
 			
 			var ba:String = (char == " " ? "":char) + sc.getCharsTo(' ', ')');
-			
 			return ba == null ? null:new Atom(ba);
 			
 			
