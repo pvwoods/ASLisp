@@ -2,9 +2,9 @@ package org.osflash.microlisp.objects
 {
 	public class Func extends MLObject
 	{
-		public var func:Object;
+		public var func:Function;
 		
-		public function Func(func:Object)
+		public function Func(func:Function)
 		{	
 			this.func = func;
 			this._type = MLObject.TYPE_FUNC;

@@ -20,7 +20,7 @@ package org.osflash.microlisp
 			
 			_input = input;
 			
-			while(_input.hasInput) eval(read(_input));
+			while(_input.hasInput) trace(eval(read(_input)));
 			
 		}
 		
@@ -63,13 +63,7 @@ package org.osflash.microlisp
 				return _NIL;
 			}),null)), null));
 			
-			_ENV.append(new Cons(new Cons(new Atom("LAMBDA"),new Cons(new Func(function(c:Cons):MLObject{
-				var lam:Lambda = c.car as Lambda;
-				var arg:MLObject = c.cdr;
-				var t:MLObject = interleave(lam.args as Cons, c);
-				var exp:MLObject = replaceAtom(lam.sexp,t);
-				return eval(exp);
-			}),null)), null));
+			_ENV.append(new Cons(new Cons(new Atom("LAMBDA"),new Cons(new Func(handleLambda),null)), null));
 			
 			_ENV.append(new Cons(new Cons(new Atom("LABEL"),new Cons(new Func(function(c:Cons):MLObject{
 				_ENV.append(new Cons(new Atom((c.car as Atom).name), new Cons((c.cdr as Cons).car, null)))
@@ -77,21 +71,45 @@ package org.osflash.microlisp
 			}),null)), null));
 		}
 		
+		public function handleLambda(c:Cons):MLObject{
+			var lam:Lambda = c.car as Lambda;
+			var arg:MLObject = c.cdr;
+			var t:MLObject = interleave(lam.args as Cons, c);
+			var exp:MLObject = replaceAtom(lam.sexp,t);
+			return eval(exp);
+		}
+		
+		public function globalLookup(name:String):MLObject{
+			for each(var c:Cons in _ENV.toCList()){
+				if((c.car as Atom).name == name) return (c.cdr as Cons).car;
+			}
+			return null;
+		}
+		
 		public function eval(expression:MLObject):MLObject{
-			if(exp is Cons){
-				var c:Cons = exp as Cons;
+			if(expression is Cons){
+				var c:Cons = expression as Cons;
 				if((c.car is Atom) && (c.car as Atom).name == "LAMBDA"){
 					return new Lambda((c.cdr as Cons).car, ((c.cdr as Cons).cdr as Cons).car); 
 				}else{
-					return evalFunction();
+					var a:Array = [];
+					for each(var o:MLObject in (expression as Cons).toCList()) a.push(eval(o));
+					return evalFunction(toCons(a));
 				}
 			}else{
-				
+				var v:MLObject = globalLookup((expression as Atom).name);
+				if(v != null) return v;
 			}
 			return expression;
 		}
 		
-		public function evalFunction(expression:MLObject):MLObject{
+		public function evalFunction(expression:Cons):MLObject{
+			if(expression.car is Lambda){
+				return handleLambda(expression as Cons);
+			}else if(expression.car is Func){
+				// may need to pass in _ENV here
+				return (expression.car as Func).func(expression.cdr);
+			}
 			return expression;
 		}
 		
