@@ -2,6 +2,7 @@ package org.osflash.microlisp
 {
 	import org.osflash.microlisp.io.*;
 	import org.osflash.microlisp.objects.*;
+        import org.osflash.log.*;
 
 	public class MicroLispInterpreter
 	{
@@ -16,11 +17,14 @@ package org.osflash.microlisp
 		
 		public function MicroLispInterpreter(input:IInputScanner):void{
 			
+                        SimpleLogger.enabled = true;
+                        SimpleLogger.log("**************** RUNNING *******************");
+
 			buildEnvironment();
 			
 			_input = input;
 			
-			trace(eval(read(_input)));
+			 SimpleLogger.log(eval(read(_input)));
 			
 		}
 		
@@ -80,25 +84,28 @@ package org.osflash.microlisp
 		}
 		
 		public function globalLookup(name:String):MLObject{
+                         SimpleLogger.log("LOOKING FOR " + name);
 			for each(var c:Cons in _ENV.toCList()){
+                                 SimpleLogger.log("ENVIRONMENT OBJECT :: " + c);
 				if((c.car as Atom).name == name) return (c.cdr as Cons).car;
 			}
 			return null;
 		}
 		
 		public function eval(expression:MLObject):MLObject{
-			if(expression is Cons){
+                        if(expression != null)  SimpleLogger.log(expression);
+                        if(expression is Cons){
 				var c:Cons = expression as Cons;
 				if((c.car is Atom) && (c.car as Atom).name == "LAMBDA"){
 					return new Lambda((c.cdr as Cons).car, ((c.cdr as Cons).cdr as Cons).car); 
 				}else{
 					var a:Array = [];
-					for each(var o:MLObject in (expression as Cons).toCList()){
+					for each(var o:MLObject in c.toCList()){
 						a.push(eval(o));
 					}
 					return evalFunction(toCons(a));
 				}
-			}else{
+			}else if(expression is Atom){
 				var v:MLObject = globalLookup((expression as Atom).name);
 				if(v != null) return v;
 			}
@@ -106,6 +113,7 @@ package org.osflash.microlisp
 		}
 		
 		public function evalFunction(expression:Cons):MLObject{
+                         SimpleLogger.log("EVALUATE FUNC :: " + expression);
 			if(expression.car is Lambda){
 				return handleLambda(expression as Cons);
 			}else if(expression.car is Func){
@@ -163,7 +171,7 @@ package org.osflash.microlisp
 		
 		protected function readTail(sc:IInputScanner):MLObject{
 			var atom:Atom = getNextAtom(sc);
-            return atom.name == ")" ? null:(new Cons(atom.name == "(" ? readTail(sc):atom, readTail(sc)));	
+                        return atom.name == ")" ? null:(new Cons(atom.name == "(" ? readTail(sc):atom, readTail(sc)));	
 		}
 		
 		protected function getNextAtom(sc:IInputScanner):Atom{
