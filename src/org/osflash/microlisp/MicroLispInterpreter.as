@@ -24,7 +24,7 @@ package org.osflash.microlisp
 			
 			_input = input;
 			
-			 SimpleLogger.log(eval(read(_input)));
+			 SimpleLogger.log(">>> " + eval(read(_input)));
 			
 		}
 		
