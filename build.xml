@@ -3,34 +3,11 @@
 
     <property name="APP_ROOT" value="src"/>
     <property name="debugMode" value="false"/>
-
 	<property environment="env"/>
-	
-	<condition property="FLEX_HOME" value="${env.FLEX_HOME}">
-		<and>
-			<not>
-				<isset property="FLEX_HOME"/>
-			</not>
-			<isset property="env.FLEX_HOME"/>
-		</and>
-	</condition>
-	
-	<condition property="FLEX_HOME" value="${FLEX_HOME.default}">
-		<not>
-			<isset property="FLEX_HOME"/>
-		</not>
-    </condition>
-	
-	<available file="${FLEX_HOME}/ant/lib/flexTasks.jar" property="flexTasks.jar" value="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
-	
-	<condition property="flexTasks.jar" value="">
-		<not>
-			<isset property="flexTasks.jar"/>
-		</not>
-	</condition>
+    <property name="FLEX_HOME" value="${env.FLEX_HOME}"/>
+    <taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/> 
 
-	<property name="flexTasks.jar" value="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
-	
+
 	<taskdef resource="flexTasks.tasks" classpath="${flexTasks.jar}" />
 	
         <target name="compile">
